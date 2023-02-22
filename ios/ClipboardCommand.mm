@@ -7,17 +7,44 @@
 @implementation ClipboardCommand
 RCT_EXPORT_MODULE()
 
-// Example method
-// See // https://reactnative.dev/docs/native-modules-ios
-RCT_REMAP_METHOD(multiply,
-                 multiplyWithA:(double)a withB:(double)b
-                 withResolver:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(setCommand:(NSString *)command)
 {
-  NSNumber *result = @(a * b);
-
-  resolve(result);
+    //创建系统剪切板
+    UIPasteboard *systemBoard = [UIPasteboard generalPasteboard];
+    //将文本写入剪切板
+    systemBoard.string = command;
+    //给剪切板加入一条标记性的数据，只是为了检测剪切板的数据是否来自当前应用
+    NSDictionary<NSString *, id> *item = @{[[NSBundle mainBundle]bundleIdentifier]:command};
+    [systemBoard addItems:@[item]];
 }
+
+RCT_EXPORT_METHOD(getCommand:(RCTPromiseResolveBlock)resolve
+                  reject:(__unused RCTPromiseRejectBlock)reject)
+{
+    @try {
+        //创建系统剪切板
+        UIPasteboard *systemBoard = [UIPasteboard generalPasteboard];
+        if(!systemBoard.numberOfItems) {
+            reject(@"ClipboardCommand:getCommand",@"没有数据", nil);
+            return;
+        }
+        NSArray<NSDictionary<NSString *, id> *> *items = systemBoard.items;
+        long count = items.count;
+        for(int i=0; i < count; i++){
+            NSDictionary<NSString *, id> *item = [items objectAtIndex:i];
+            if([[item allKeys] containsObject:[[NSBundle mainBundle]bundleIdentifier]]){
+                reject(@"ClipboardCommand:getCommand",@"自己在应用内复制的指令", nil);
+                return;
+            }
+        }
+        resolve((systemBoard.string ? : @""));
+    } @catch (NSException *exception) {
+        reject(@"ClipboardCommand:getCommand",@"报错了", nil);
+    } @finally {
+                
+    }
+}
+
 
 // Don't compile this code when we build for the old architecture.
 #ifdef RCT_NEW_ARCH_ENABLED
