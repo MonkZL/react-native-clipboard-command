@@ -24,7 +24,7 @@ const ClipboardCommand = NativeModules.ClipboardCommand
     );
 
 export function setCommand(command: string) {
-  return ClipboardCommand.setCommand(command);
+  ClipboardCommand.setCommand(command);
 }
 
 export function getCommand(): Promise<string> {

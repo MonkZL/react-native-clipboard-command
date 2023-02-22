@@ -25,7 +25,7 @@ RCT_EXPORT_METHOD(getCommand:(RCTPromiseResolveBlock)resolve
         //创建系统剪切板
         UIPasteboard *systemBoard = [UIPasteboard generalPasteboard];
         if(!systemBoard.numberOfItems) {
-            reject(@"ClipboardCommand:getCommand",@"没有数据", nil);
+            reject(@"0",@"没有数据", nil);
             return;
         }
         NSArray<NSDictionary<NSString *, id> *> *items = systemBoard.items;
@@ -33,13 +33,13 @@ RCT_EXPORT_METHOD(getCommand:(RCTPromiseResolveBlock)resolve
         for(int i=0; i < count; i++){
             NSDictionary<NSString *, id> *item = [items objectAtIndex:i];
             if([[item allKeys] containsObject:[[NSBundle mainBundle]bundleIdentifier]]){
-                reject(@"ClipboardCommand:getCommand",@"自己在应用内复制的指令", nil);
+                reject(@"1",@"自己在应用内复制的指令", nil);
                 return;
             }
         }
         resolve((systemBoard.string ? : @""));
     } @catch (NSException *exception) {
-        reject(@"ClipboardCommand:getCommand",@"报错了", nil);
+        reject(@"2",exception.reason, nil);
     } @finally {
                 
     }
